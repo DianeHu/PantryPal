@@ -1,0 +1,15 @@
+SELECT uid, name FROM Users WHERE longitude>50 AND longitude<80 AND latitude>50 AND
+ latitude<80;
+ uid | name 
+-----+------
+   3 | C
+(1 row)
+SELECT name FROM Ingredients WHERE name='tomato' or name='cheese';
+ name 
+------
+(0 rows)
+SELECT url, name FROM Recipe WHERE name LIKE 'Noodle%';
+       url        |  name   
+------------------+---------
+ www.example3.com | Noodles
+(1 row)
