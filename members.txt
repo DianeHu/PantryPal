@@ -1,0 +1,5 @@
+Diane Hu - created load.sql
+Emily Liu - created create.sql
+Jarod Cahoon - wrote ER diagram and basic schema
+Kevin Deng - created test-sample.sql
+Rahul Sengottuvelu - designed user interface 
