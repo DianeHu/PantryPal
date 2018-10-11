@@ -21,4 +21,4 @@ INSERT INTO PantryIngredients VALUES
 INSERT INTO Recipe VALUES
 	('Curry chicken', 'http://example.com'),
 	('Pad thai", 'http://example2.com'),
-	('Noodles', 'http://example3.com');
+	('Tomato Soup', 'http://example3.com');
