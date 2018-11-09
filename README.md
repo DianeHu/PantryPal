@@ -1,4 +1,9 @@
 # PantryPal
+
+## Loading Production Dataset
+
+Our production dataset is not scraped from anywhere necessarily, because our functionality largely operates based on the API we’re using. Instead, our production dataset will be populated as time goes on by users creating accounts and creating their own pantries with their own ingredients. Therefore, there is no specific code for generating a “production” dataset, just the code we’re using in our app to populate our website and update our database. See test-production.sql for examples.
+
 ## Running Flask App Locally
 
 ### Start up the virtual environment in shell
