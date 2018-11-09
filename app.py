@@ -37,5 +37,38 @@ def verifyToken(token):
         return None
 
 
+### FOR THE FOLLOWING FUNCTIONS:
+# call verifyToken on request.args.get('token') as in /authenticate
+# use .get('email') attribute of the returned dictionary to identify user (primary key)
+
+# TODO
+# # returns recipes for a specific user
+# @app.route("/getrecipes", methods=['GET', 'POST'])
+# def getRecipes():
+#     user = verifyToken(token)
+#     if user:
+#
+# TODO
+# # modify for a specific user
+# # input: key value pairs of ingredient, shouldBeAdded
+# # if shouldBeAdded is True, add to database, otherwise remove
+# @app.route("/modifyingredients", methods=['GET', 'POST'])
+# def modifyIngredients():
+#     user = verifyToken(token)
+#     if user:
+#
+# TODO
+# # return list of all ingredients
+# @app.route("/getingredients", methods=['GET', 'POST'])
+# def getIngredients():
+#     user = verifyToken(token)
+#     if user:
+#
+
+
+
+
+
+
 if __name__ == '__main__':
     app.run(debug=True)
