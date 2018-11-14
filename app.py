@@ -1,5 +1,5 @@
 from flask import (
-    render_template, request, make_response, current_app
+    render_template, request, make_response, current_app, jsonify
 )
 import connexion
 from google.oauth2 import id_token
@@ -43,27 +43,30 @@ def verifyToken(token):
 
 # TODO
 # # returns recipes for a specific user
-# @app.route("/getrecipes", methods=['GET', 'POST'])
-# def getRecipes():
-#     user = verifyToken(token)
-#     if user:
+@app.route("/getrecipes", methods=['GET', 'POST'])
+def getRecipes():
+     user = verifyToken(request.args.get('token'))
+     if user:
 #
 # TODO
 # # modify for a specific user
 # # input: key value pairs of ingredient, shouldBeAdded
 # # if shouldBeAdded is True, add to database, otherwise remove
-# @app.route("/modifyingredients", methods=['GET', 'POST'])
-# def modifyIngredients():
-#     user = verifyToken(token)
-#     if user:
-#
+
+@app.route("/modifyingredients/<string:ingredient>/<int:shouldBeAdded>", methods=['GET', 'POST'])
+def modifyIngredients(ingredient, shouldBeAdded):
+    user = verifyToken(request.args.get('token'))
+    if user:
+        if(request.method == 'POST'):
+
+    else:
+
 # TODO
 # # return list of all ingredients
-# @app.route("/getingredients", methods=['GET', 'POST'])
-# def getIngredients():
-#     user = verifyToken(token)
-#     if user:
-#
+@app.route("/getingredients", methods=['GET'])
+def getIngredients():
+     user = verifyToken(token)
+     if user:
 
 
 
