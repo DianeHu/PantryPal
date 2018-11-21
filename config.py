@@ -37,7 +37,7 @@ PROJECT_ID = 'pantrypal-316'
 # CloudSQL & SQLAlchemy configuration
 # Replace the following values the respective values of your Cloud SQL
 # instance.
-CLOUDSQL_USER = 'root'
+CLOUDSQL_USER = 'postgres'
 CLOUDSQL_PASSWORD = 'pantry-password'
 CLOUDSQL_DATABASE = 'pantry-test'
 # Set this value to the Cloud SQL connection name, e.g.

@@ -22,7 +22,9 @@ app = Flask(__name__)
 
 # [START example]
 # Environment variables are defined in app.yaml.
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://root:pantry-password@/pantry-test?host=/cloudsql/pantrypal-316:us-east1:pantry-test"
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://postgres:pantry-password@127.0.0.1:5432/pantry-test"
+# default user is postgres not root
+#"postgresql+psycopg2://root:pantry-password@/pantry-test?host=/cloudsql/pantrypal-316:us-east1:pantry-test"
 #os.environ['SQLALCHEMY_DATABASE_URI']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
