@@ -22,26 +22,45 @@ app = Flask(__name__)
 
 # [START example]
 # Environment variables are defined in app.yaml.
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://postgres:pantry-password@127.0.0.1:5432/pantry-test"
+# app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://postgres:pantry-password@127.0.0.1:5432/pantry-test"
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['SQLALCHEMY_DATABASE_URI']
 # default user is postgres not root
-#"postgresql+psycopg2://root:pantry-password@/pantry-test?host=/cloudsql/pantrypal-316:us-east1:pantry-test"
+# "postgresql+psycopg2://postgres:pantry-password@/pantry-test?host=/cloudsql/pantrypal-316:us-east1:pantry-test"
 #os.environ['SQLALCHEMY_DATABASE_URI']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+# db.create_all()
 
 class Recipe(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    ingredient = db.Column(db.String(50))
+    ingredient = db.Column(db.String(255))
 
     def __init__(self, ingredient):
         self.ingredient = ingredient
 
 @app.route('/')
 def hello():
+    db.create_all()
     """Return a friendly HTTP greeting."""
     return 'Hello World!'
 
+@app.route('/test')
+def test():
+    rec = Recipe(
+        ingredient = "Tomato"
+    )
+
+    db.session.add(rec)
+    db.session.commit()
+
+    recipes = Recipe.query.limit(10)
+
+    results = ['Recipe: {}'.format(r.ingredient) for r in recipes]
+
+    output = 'Last 10 ingredients: \n{}'.format('\n'.join(results))
+
+    return output, 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=8080)
