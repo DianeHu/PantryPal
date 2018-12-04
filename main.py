@@ -132,26 +132,46 @@ def hello():
     """Return a friendly HTTP greeting."""
     return 'Hello World!'
 
+@app.route('/getpantry', methods=['GET'])
+def getpantry():
+    # user = verifyToken(request.args.get('token'))
+    # if user:
+    #     currEmail = user.get('email')
+    #     userId = Users.query.filter(Users.email == currEmail)[0].id
+    #     currPantry = Pantry.query.filter(Pantry.userid == userId)
+    #     ingIds = [p.ingid for p in currPantry]
+    #     ingredients = Ingredient.query.filter(Ingredient.id.in_(ingIds))
+    #     results = {'Ingredients': [i.ingname for i in ingredients]}
+    #     return jsonify(results), 201
+    # else:
+    #     return "Invalid user", 401
+
+        currEmail = "dianehu24@gmail.com"
+        userId = Users.query.filter(Users.email == currEmail)[0].id
+        currPantry = Pantry.query.filter(Pantry.userid == userId)
+        ingIds = [p.ingid for p in currPantry]
+        ingredients = Ingredient.query.filter(Ingredient.id.in_(ingIds))
+        results = {'Ingredients': [i.ingname for i in ingredients]}
+        return jsonify(results), 201
+
+
 @app.route("/modifyingredients/<string:ingredient>/<int:shouldBeAdded>", methods=['POST'])
 def modifyIngredients(ingredient, shouldBeAdded):
     # user = verifyToken(request.args.get('token'))
     # if user:
-    #     if shouldBeAdded == 1:
-    #         #Pantry = userid, ingid
-    #         currEmail = user.get('email')
-    #         print(currEmail)
-    #         userId = Users.query.filter(email == currEmail)[0].id
-    #         ing = Ingredient.query.filter(ingname == ingredient)[0].id
     #
+    #     currEmail = user.get('email')
+    #     userId = Users.query.filter(Users.email == currEmail)[0].id
+    #     ing = Ingredient.query.filter(Ingredient.ingname == ingredient)[0].id
+    #
+    #     if shouldBeAdded == 1:
     #         p = Pantry(userid = userId, ingid = ing)
     #         db.session.add(p)
     #         db.session.commit()
-    #
     #         return ("Success", 201)
-    #     elif shouldBeAdded == 0:
-    #         ing = Ingredient.query.filter(ingname == ingredient)[0].id
-    #         Ingredient.query.filter(id = ing).delete()
     #
+    #     elif shouldBeAdded == 0:
+    #         Pantry.query.filter(Pantry.ingid == ing and Pantry.userid == userId).delete()
     #         db.session.commit()
     #         return("Success", 201)
     #     else:
