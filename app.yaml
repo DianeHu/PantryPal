@@ -27,6 +27,9 @@ runtime_config:
 env_variables:
     # Replace user, password, database, and instance connection name with the values obtained
     # when configuring your Cloud SQL instance.
+    API_KEY:
+      Temp
+
     SQLALCHEMY_DATABASE_URI: >-
       postgresql+psycopg2://postgres:pantry-password@/pantry-test?host=/cloudsql/pantrypal-316:us-east1:pantry-test
 #[END env]

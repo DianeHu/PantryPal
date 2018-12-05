@@ -26,6 +26,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 from functools import update_wrapper
 from misc import crossdomain
+import requests
 
 app = Flask(__name__)
 
@@ -38,6 +39,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://postgres:pantry-p
 # "postgresql+psycopg2://postgres:pantry-password@/pantry-test?host=/cloudsql/pantrypal-316:us-east1:pantry-test"
 #os.environ['SQLALCHEMY_DATABASE_URI']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+key = "Not posted, fix yaml later too"
+url = "https://spoonacular-recipe-food-nutrition-v1.p.mashape.com/recipes/findByIngredients"
+# X-Mashape-Key = os.environ['API_KEY']
 
 db = SQLAlchemy(app)
 # db.create_all()
@@ -125,6 +130,45 @@ def verifyToken(token):
 ### FOR THE FOLLOWING FUNCTIONS:
 # call verifyToken on request.args.get('token') as in /authenticate
 # use .get('email') attribute of the returned dictionary to identify user (primary key)
+
+@app.route('/recipesforingredients', methods=['GET'])
+def recipesforingredients():
+    # user = verifyToken(request.args.get('token'))
+    # if user:
+    #     currEmail = user.get('email')
+    #     userId = Users.query.filter(Users.email == currEmail)[0].id
+    #     currPantry = Pantry.query.filter(Pantry.userid == userId)
+    #     ingIds = [p.ingid for p in currPantry]
+    #     ingredients = Ingredient.query.filter(Ingredient.id.in_(ingIds))
+    #     currPantry = [i.ingname for i in ingredients]
+    #     payload = {'fillingredients': False,
+    #                 'ingredients': currPantry,
+    #                 'limitLicense': False,
+    #                 'number': 10,
+    #                 'ranking': 2
+    #                 }
+    #     head = {'X-Mashape-Key': key, 'Accept': 'application/json'}
+    #     r = requests.get(url, params = payload, headers = head)
+    #     return jsonify(r.json()), 201
+    # else:
+    #     return 'Invalid user', 401
+
+    currEmail = "dianehu24@gmail.com"
+    userId = Users.query.filter(Users.email == currEmail)[0].id
+    currPantry = Pantry.query.filter(Pantry.userid == userId)
+    ingIds = [p.ingid for p in currPantry]
+    ingredients = Ingredient.query.filter(Ingredient.id.in_(ingIds))
+    currPantry = [i.ingname for i in ingredients]
+    payload = {'fillingredients': False,
+                'ingredients': currPantry,
+                'limitLicense': False,
+                'number': 10,
+                'ranking': 2
+                }
+    head = {'X-Mashape-Key': key, 'Accept': 'application/json'}
+    r = requests.get(url, params = payload, headers = head)
+    return jsonify(r.json()), 201
+
 
 @app.route('/')
 def hello():
