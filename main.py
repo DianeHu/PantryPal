@@ -40,19 +40,11 @@ app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://postgres:pantry-p
 #os.environ['SQLALCHEMY_DATABASE_URI']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-key = "Not posted, fix yaml later too"
+key = "NOT REAL" ## WARNING!!!
 url = "https://spoonacular-recipe-food-nutrition-v1.p.mashape.com/recipes/findByIngredients"
 # X-Mashape-Key = os.environ['API_KEY']
 
 db = SQLAlchemy(app)
-# db.create_all()
-
-# class Recipe(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     ingredient = db.Column(db.String(255))
-#
-#     def __init__(self, ingredient):
-#         self.ingredient = ingredient
 
 class Recipe(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -86,7 +78,7 @@ class Users(db.Model):
     #children = relationship("Pantry")
 
     def __init__(self, username, email, latitude, longitude):
-        self.username = userName
+        self.username = username
         self.email = email
         self.latitude = latitude
         self.longitude = longitude
@@ -131,6 +123,8 @@ def verifyToken(token):
 # call verifyToken on request.args.get('token') as in /authenticate
 # use .get('email') attribute of the returned dictionary to identify user (primary key)
 
+## TODO: POST request for everything!!
+
 @app.route('/recipesforingredients', methods=['GET'])
 def recipesforingredients():
     # user = verifyToken(request.args.get('token'))
@@ -171,10 +165,27 @@ def recipesforingredients():
 
 
 @app.route('/')
-def hello():
+def create():
     db.create_all()
     """Return a friendly HTTP greeting."""
     return 'Hello World!'
+
+@app.route('/dropall')
+def dropall():
+    db.drop_all()
+    return 'Dropped!'
+
+@app.route('/createuser/<string:user>/<string:em>')
+def createuser(user, em):
+    us = Users(
+        username = user,
+        email = em,
+        latitude = 0,
+        longitude = 0
+    )
+    db.session.add(us)
+    db.session.commit()
+    return 'Done!', 200
 
 @app.route('/getpantry', methods=['GET'])
 def getpantry():
@@ -198,9 +209,12 @@ def getpantry():
         results = {'Ingredients': [i.ingname for i in ingredients]}
         return jsonify(results), 201
 
+## TODO: change get recipes per ingredients to list, change post request format shit
+
 
 @app.route("/modifyingredients/<string:ingredient>/<int:shouldBeAdded>", methods=['POST'])
 def modifyIngredients(ingredient, shouldBeAdded):
+    # NEED TO ADD INGREDIENT FIRST IN CASE NOT ADDED!!!!!!!!!!!
     # user = verifyToken(request.args.get('token'))
     # if user:
     #
@@ -245,32 +259,32 @@ def getIngredients():
     results = {'Ingredients': [i.ingname for i in ings]}
     return jsonify(results), 200
 
-@app.route("/testadd/<string:val>")
-def testadd(val):
+@app.route("/adding/<string:val>")
+def adding(val):
     ing = Ingredient(ingname = val)
     db.session.add(ing)
     db.session.commit()
     return val, 200
 
-@app.route('/test')
-def test():
-    rec = Recipe(
-        recipeName = "Test",
-        instruction = "Do something",
-        url = "www.test.com"
-    )
-
-    db.session.add(rec)
-    db.session.commit()
-
-    recipes = Recipe.query.limit(10)
-
-    results = ['Recipe: {}'.format(r.recipeName) for r in recipes]
-
-    output = 'Last 10 recipe names: \n{}'.format('\n'.join(results))
-
-    return output, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+# @app.route('/test')
+# def test():
+#     rec = Recipe(
+#         recipeName = "Test",
+#         instruction = "Do something",
+#         url = "www.test.com"
+#     )
+#
+#     db.session.add(rec)
+#     db.session.commit()
+#
+#     recipes = Recipe.query.limit(10)
+#
+#     results = ['Recipe: {}'.format(r.recipeName) for r in recipes]
+#
+#     output = 'Last 10 recipe names: \n{}'.format('\n'.join(results))
+#
+#     return output, 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=8080)
+    app.run(host='10.197.36.110', port=8080, debug=True)
 # [END app]
