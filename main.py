@@ -26,7 +26,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 from functools import update_wrapper
 from misc import crossdomain
-import requests
+import requests as r
 
 app = Flask(__name__)
 
@@ -40,7 +40,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://postgres:pantry-p
 #os.environ['SQLALCHEMY_DATABASE_URI']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-key = "NOT REAL" ## WARNING!!!
+key = "None" ## WARNING!!!
 url = "https://spoonacular-recipe-food-nutrition-v1.p.mashape.com/recipes/findByIngredients"
 # X-Mashape-Key = os.environ['API_KEY']
 
@@ -61,7 +61,7 @@ class Recipe(db.Model):
 
 class Ingredient(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    ingname = db.Column(db.String(255), nullable=False)
+    ingname = db.Column(db.String(255), nullable=False, unique=True)
 
     #children = relationship("Ingperrecipe", "Pantry")
 
@@ -71,7 +71,7 @@ class Ingredient(db.Model):
 class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255), nullable=False)
-    email = db.Column(db.String(255), nullable=False)
+    email = db.Column(db.String(255), nullable=False, unique=True)
     latitude = db.Column(db.Integer)
     longitude = db.Column(db.Integer)
 
@@ -104,6 +104,19 @@ class Pantry(db.Model):
 def auth():
     verify = verifyToken(request.args.get('token'))
     if verify:
+        user = verify.get('name')
+        em = verify.get('email')
+
+        exists = Users.query.filter(Users.email == em).count()
+        if exists == 0:
+            us = Users(
+                username = user,
+                email = em,
+                latitude = 0,
+                longitude = 0
+            )
+            db.session.add(us)
+            db.session.commit()
         return 'valid'
     else:
         return None
@@ -126,57 +139,59 @@ def verifyToken(token):
 ## TODO: POST request for everything!!
 
 @app.route('/recipesforingredients', methods=['GET'])
+@crossdomain(origin='*')
 def recipesforingredients():
-    # user = verifyToken(request.args.get('token'))
-    # if user:
-    #     currEmail = user.get('email')
-    #     userId = Users.query.filter(Users.email == currEmail)[0].id
-    #     currPantry = Pantry.query.filter(Pantry.userid == userId)
-    #     ingIds = [p.ingid for p in currPantry]
-    #     ingredients = Ingredient.query.filter(Ingredient.id.in_(ingIds))
-    #     currPantry = [i.ingname for i in ingredients]
-    #     payload = {'fillingredients': False,
-    #                 'ingredients': currPantry,
-    #                 'limitLicense': False,
-    #                 'number': 10,
-    #                 'ranking': 2
-    #                 }
-    #     head = {'X-Mashape-Key': key, 'Accept': 'application/json'}
-    #     r = requests.get(url, params = payload, headers = head)
-    #     return jsonify(r.json()), 201
-    # else:
-    #     return 'Invalid user', 401
+    user = verifyToken(request.args.get('token'))
+    if user:
+        ingredients = request.args.get('ingredients')
+        currPantry = [i.ingname for i in ingredients]
+        payload = {'fillingredients': False,
+                    'ingredients': currPantry,
+                    'limitLicense': False,
+                    'number': 10,
+                    'ranking': 2
+                    }
+        head = {'X-Mashape-Key': key, 'Accept': 'application/json'}
+        req = r.get(url, params = payload, headers = head)
+        return jsonify(req.json()), 201
+    else:
+        return 'Invalid user', 401
 
-    currEmail = "dianehu24@gmail.com"
-    userId = Users.query.filter(Users.email == currEmail)[0].id
-    currPantry = Pantry.query.filter(Pantry.userid == userId)
-    ingIds = [p.ingid for p in currPantry]
-    ingredients = Ingredient.query.filter(Ingredient.id.in_(ingIds))
-    currPantry = [i.ingname for i in ingredients]
-    payload = {'fillingredients': False,
-                'ingredients': currPantry,
-                'limitLicense': False,
-                'number': 10,
-                'ranking': 2
-                }
-    head = {'X-Mashape-Key': key, 'Accept': 'application/json'}
-    r = requests.get(url, params = payload, headers = head)
-    return jsonify(r.json()), 201
+    # currEmail = "dianehu24@gmail.com"
+    # userId = Users.query.filter(Users.email == currEmail)[0].id
+    # currPantry = Pantry.query.filter(Pantry.userid == userId)
+    # ingIds = [p.ingid for p in currPantry]
+    # ingredients = Ingredient.query.filter(Ingredient.id.in_(ingIds))
+    # currPantry = [i.ingname for i in ingredients]
+    # payload = {'fillingredients': False,
+    #             'ingredients': currPantry,
+    #             'limitLicense': False,
+    #             'number': 10,
+    #             'ranking': 2
+    #             }
+    # head = {'X-Mashape-Key': key, 'Accept': 'application/json'}
+    # r = requests.get(url, params = payload, headers = head)
+    # return jsonify(r.json()), 201
 
 
 @app.route('/')
+@crossdomain(origin='*')
 def create():
     db.create_all()
     """Return a friendly HTTP greeting."""
     return 'Hello World!'
 
 @app.route('/dropall')
+@crossdomain(origin='*')
 def dropall():
     db.drop_all()
     return 'Dropped!'
 
-@app.route('/createuser/<string:user>/<string:em>')
+@app.route('/createuser', methods=['POST'])
 def createuser(user, em):
+    user = request.args.get('user')
+    em = request.args.get('em')
+
     us = Users(
         username = user,
         email = em,
@@ -188,70 +203,65 @@ def createuser(user, em):
     return 'Done!', 200
 
 @app.route('/getpantry', methods=['GET'])
+@crossdomain(origin='*')
 def getpantry():
-    # user = verifyToken(request.args.get('token'))
-    # if user:
-    #     currEmail = user.get('email')
-    #     userId = Users.query.filter(Users.email == currEmail)[0].id
-    #     currPantry = Pantry.query.filter(Pantry.userid == userId)
-    #     ingIds = [p.ingid for p in currPantry]
-    #     ingredients = Ingredient.query.filter(Ingredient.id.in_(ingIds))
-    #     results = {'Ingredients': [i.ingname for i in ingredients]}
-    #     return jsonify(results), 201
-    # else:
-    #     return "Invalid user", 401
-
-        currEmail = "dianehu24@gmail.com"
+    user = verifyToken(request.args.get('token'))
+    if user:
+        currEmail = user.get('email')
         userId = Users.query.filter(Users.email == currEmail)[0].id
         currPantry = Pantry.query.filter(Pantry.userid == userId)
         ingIds = [p.ingid for p in currPantry]
         ingredients = Ingredient.query.filter(Ingredient.id.in_(ingIds))
         results = {'Ingredients': [i.ingname for i in ingredients]}
         return jsonify(results), 201
+    else:
+        return "Invalid user", 401
 
 ## TODO: change get recipes per ingredients to list, change post request format shit
 
 
-@app.route("/modifyingredients/<string:ingredient>/<int:shouldBeAdded>", methods=['POST'])
-def modifyIngredients(ingredient, shouldBeAdded):
-    # NEED TO ADD INGREDIENT FIRST IN CASE NOT ADDED!!!!!!!!!!!
-    # user = verifyToken(request.args.get('token'))
-    # if user:
-    #
-    #     currEmail = user.get('email')
-    #     userId = Users.query.filter(Users.email == currEmail)[0].id
-    #     ing = Ingredient.query.filter(Ingredient.ingname == ingredient)[0].id
-    #
-    #     if shouldBeAdded == 1:
-    #         p = Pantry(userid = userId, ingid = ing)
-    #         db.session.add(p)
-    #         db.session.commit()
-    #         return ("Success", 201)
-    #
-    #     elif shouldBeAdded == 0:
-    #         Pantry.query.filter(Pantry.ingid == ing and Pantry.userid == userId).delete()
-    #         db.session.commit()
-    #         return("Success", 201)
-    #     else:
-    #         return (None, 401) # check that 401 is the right error
-    # else:
-    #     return ("Invalid user", 401)
+@app.route("/modifyingredients", methods=['POST'])
+@crossdomain(origin='*')
+def modifyIngredients():
+    ingredient = request.values.get('ingredient')
+    ing = ''
+    exists = Ingredient.query.filter(Ingredient.ingname == ingredient).count()
 
-    currEmail = "dianehu24@gmail.com"
-    userId = Users.query.filter(Users.email == currEmail)[0].id
-    ing = Ingredient.query.filter(Ingredient.ingname == ingredient)[0].id
+    if exists == 0:
+        ingr = Ingredient(ingname = ingredient)
 
-    if shouldBeAdded == 1:
-        p = Pantry(userid = userId, ingid = ing)
-        db.session.add(p)
+        db.session.add(ingr)
+        db.session.flush()
+
+        ing = ingr.id
         db.session.commit()
-        return ("Success", 201)
-    elif shouldBeAdded == 0:
-        Pantry.query.filter(Pantry.ingid == ing and Pantry.userid == userId).delete()
-        db.session.commit()
-        return("Success", 201)
     else:
-        return (None, 401) # check that 401 is the right error
+        ing = Ingredient.query.filter(Ingredient.ingname == ingredient)[0].id
+
+    user = verifyToken(request.values.get('token'))
+    shouldBeAdded = request.values.get('shouldBeAdded')
+    if user:
+        currEmail = user.get('email')
+        userId = Users.query.filter(Users.email == currEmail)[0].id
+
+        if shouldBeAdded == "1":
+            exists = Pantry.query.filter(Pantry.ingid == ing and Pantry.userid == userId).count()
+            if exists == 0:
+                p = Pantry(userid = userId, ingid = ing)
+                db.session.add(p)
+                db.session.commit()
+                return ("Success", 201)
+            else:
+                return ("Already in pantry", 201)
+
+        elif shouldBeAdded == "0":
+            Pantry.query.filter(Pantry.ingid == ing and Pantry.userid == userId).delete()
+            db.session.commit()
+            return("Success", 201)
+        else:
+            return ("Should be added was invalid", 401) # check that 401 is the right error
+    else:
+        return ("Invalid user", 401)
 
 @app.route("/getingredients", methods=['GET'])
 def getIngredients():
@@ -265,25 +275,6 @@ def adding(val):
     db.session.add(ing)
     db.session.commit()
     return val, 200
-
-# @app.route('/test')
-# def test():
-#     rec = Recipe(
-#         recipeName = "Test",
-#         instruction = "Do something",
-#         url = "www.test.com"
-#     )
-#
-#     db.session.add(rec)
-#     db.session.commit()
-#
-#     recipes = Recipe.query.limit(10)
-#
-#     results = ['Recipe: {}'.format(r.recipeName) for r in recipes]
-#
-#     output = 'Last 10 recipe names: \n{}'.format('\n'.join(results))
-#
-#     return output, 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
 if __name__ == '__main__':
     app.run(host='10.197.36.110', port=8080, debug=True)
