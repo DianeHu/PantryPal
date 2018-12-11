@@ -27,6 +27,7 @@ from google.auth.transport import requests
 from functools import update_wrapper
 from misc import crossdomain
 import requests as r
+import json
 
 app = Flask(__name__)
 
@@ -40,7 +41,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://postgres:pantry-p
 #os.environ['SQLALCHEMY_DATABASE_URI']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-key = "None" ## WARNING!!!
+key = "Temp" ## WARNING!!!
 url = "https://spoonacular-recipe-food-nutrition-v1.p.mashape.com/recipes/findByIngredients"
 # X-Mashape-Key = os.environ['API_KEY']
 
@@ -132,19 +133,14 @@ def verifyToken(token):
     except ValueError:
         return None
 
-### FOR THE FOLLOWING FUNCTIONS:
-# call verifyToken on request.args.get('token') as in /authenticate
-# use .get('email') attribute of the returned dictionary to identify user (primary key)
-
-## TODO: POST request for everything!!
-
-@app.route('/recipesforingredients', methods=['GET'])
+@app.route('/recipesforingredients', methods=['POST'])
 @crossdomain(origin='*')
 def recipesforingredients():
-    user = verifyToken(request.args.get('token'))
+    user = verifyToken(request.values.get('token'))
     if user:
-        ingredients = request.args.get('ingredients')
-        currPantry = [i.ingname for i in ingredients]
+        data = request.data
+        dataDict = json.loads(data)
+        currPantry = dataDict.get('ingredients')
         payload = {'fillingredients': False,
                     'ingredients': currPantry,
                     'limitLicense': False,
@@ -156,23 +152,6 @@ def recipesforingredients():
         return jsonify(req.json()), 201
     else:
         return 'Invalid user', 401
-
-    # currEmail = "dianehu24@gmail.com"
-    # userId = Users.query.filter(Users.email == currEmail)[0].id
-    # currPantry = Pantry.query.filter(Pantry.userid == userId)
-    # ingIds = [p.ingid for p in currPantry]
-    # ingredients = Ingredient.query.filter(Ingredient.id.in_(ingIds))
-    # currPantry = [i.ingname for i in ingredients]
-    # payload = {'fillingredients': False,
-    #             'ingredients': currPantry,
-    #             'limitLicense': False,
-    #             'number': 10,
-    #             'ranking': 2
-    #             }
-    # head = {'X-Mashape-Key': key, 'Accept': 'application/json'}
-    # r = requests.get(url, params = payload, headers = head)
-    # return jsonify(r.json()), 201
-
 
 @app.route('/')
 @crossdomain(origin='*')
@@ -217,8 +196,30 @@ def getpantry():
     else:
         return "Invalid user", 401
 
-## TODO: change get recipes per ingredients to list, change post request format shit
+@app.route('/getcommunity', methods=['GET'])
+@crossdomain(origin='*')
+def getcommunity():
+    user = verifyToken(request.args.get('token'))
+    availUsers = []
+    corrEmail = []
+    ingreds = []
+    if user:
+        for val in Pantry.query.distinct(Pantry.userid): # get distinct users in pantry
+            currId = val.userid # user id
+            curr = Users.query.filter(Users.id == currId)[0]
+            currName = curr.username # username
+            currEmail = curr.email # email
+            if currEmail != user.get('email'):
+                availUsers.append(currName)
+                corrEmail.append(currEmail)
+                ingTemp = Pantry.query.filter(Pantry.userid == currId) # corresponding ingredients
+                ings = [Ingredient.query.filter(Ingredient.id == p.ingid)[0].ingname for p in ingTemp] # get ing names
+                ingreds.append(ings)
 
+        results = [{'name': n, 'email': e, 'ingredients': i} for (n,e,i) in zip(availUsers, corrEmail, ingreds)]
+        return jsonify(results), 201
+    else:
+        return "Invalid user", 401
 
 @app.route("/modifyingredients", methods=['POST'])
 @crossdomain(origin='*')
@@ -255,7 +256,9 @@ def modifyIngredients():
                 return ("Already in pantry", 201)
 
         elif shouldBeAdded == "0":
-            Pantry.query.filter(Pantry.ingid == ing and Pantry.userid == userId).delete()
+            exists = Pantry.query.filter(Pantry.ingid == ing and Pantry.userid == userId)
+            if exists.count() != 0:
+                exists.delete()
             db.session.commit()
             return("Success", 201)
         else:
@@ -278,4 +281,5 @@ def adding(val):
 
 if __name__ == '__main__':
     app.run(host='10.197.36.110', port=8080, debug=True)
+    # app.run(host='127.0.0.1', port=8080)
 # [END app]
