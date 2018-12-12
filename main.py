@@ -41,7 +41,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://postgres:pantry-p
 #os.environ['SQLALCHEMY_DATABASE_URI']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-key = "Temp" ## WARNING!!!
+key = "YOUR_SPOONACULAR_KEY" ## WARNING!!!
 url = "https://spoonacular-recipe-food-nutrition-v1.p.mashape.com/recipes/findByIngredients"
 # X-Mashape-Key = os.environ['API_KEY']
 
@@ -280,6 +280,6 @@ def adding(val):
     return val, 200
 
 if __name__ == '__main__':
-    app.run(host='10.197.36.110', port=8080, debug=True)
-    # app.run(host='127.0.0.1', port=8080)
+    #app.run(host='10.197.36.110', port=8080, debug=True)
+    app.run(host='127.0.0.1', port=8080)
 # [END app]
