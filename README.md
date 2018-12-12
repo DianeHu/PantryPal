@@ -2,8 +2,6 @@
 ## Running Flask App Locally
 
 ### Start up the virtual environment in shell
-how to set up your servers and database, and how to compile and deploy your
-application.
 
 Go to the root level of the repository and use the following command (In a shell that is not Git Bash):
 
