@@ -46,9 +46,15 @@ To create the databases necessary, next return to the shell running your virtual
 py create_tables.py
 ```
 
+Now, go to https://spoonacular-recipe-food-nutrition-v1.p.mashape.com/recipes/findByIngredients, and obtain a key for this API. When you have one, return to main.py and insert into the variable "key" whose current value is YOUR_SPOONACULAR_KEY.
+
 You are now ready to start the application. In the shell running your virtual environment, type:
 
 ```
 py main.py
 ```
 In a new browser window, type in http://127.0.0.1:8080/. Your backend should now be running on that port.
+
+### Deployment
+
+To deploy, create a Google Cloud account, and set up a Postgres database. Download the gcloud CLI and create a Google App Engine instance. Replace the information in app.yaml with information specific to your instance, and deploy via the CLI. Further documentation can be found at https://cloud.google.com/appengine/docs/flexible/python/using-cloud-sql-postgres.
